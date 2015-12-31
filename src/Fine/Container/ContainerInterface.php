@@ -1,6 +1,6 @@
 <?php
 
-namespace \Fine\Container;
+namespace Fine\Container;
 
 interface ContainerInterface extends \ArrayAccess, \IteratorAggregate
 {

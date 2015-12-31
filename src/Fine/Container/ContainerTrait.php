@@ -1,6 +1,6 @@
 <?php
 
-namespace \Fine\Container;
+namespace Fine\Container;
 
 trait ContainerTrait
 {
@@ -62,6 +62,16 @@ trait ContainerTrait
     {
         $this->_containerServicesDefinitions[$name] = $definition;
         return $this;
+    }
+
+    public function offsetExists($offset)
+    {
+    }
+    public function offsetGet($offset)
+    {
+    }
+    public function offsetUnset($offset)
+    {
     }
 
     public function getInterator()

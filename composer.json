@@ -8,6 +8,6 @@
     },
     "minimum-stability": "dev",
     "autoload": {
-        "psr-4": { "Fine\\Container\\": "src" }
+        "psr-4": { "Fine\\Container\\": "src/Fine/Container" }
     }
 }
