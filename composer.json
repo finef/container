@@ -7,7 +7,7 @@
         "php": ">=5.4.0"
     },
     "autoload": {
-        "psr-4": { "Fine\\Container\\": "src" },
+        "psr-4": { "Fine\\Container\\": "src" }
     },
     "minimum-stability": "dev"
 }
