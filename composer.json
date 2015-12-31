@@ -9,5 +9,5 @@
     "autoload": {
         "psr-4": { "Fine\\Container\\": "src" },
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "dev"
 }
