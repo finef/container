@@ -6,8 +6,8 @@
     "require": {
         "php": ">=5.4.0"
     },
+    "minimum-stability": "dev",
     "autoload": {
         "psr-4": { "Fine\\Container\\": "src" }
-    },
-    "minimum-stability": "dev"
+    }
 }
