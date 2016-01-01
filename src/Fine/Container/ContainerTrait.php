@@ -40,7 +40,23 @@ trait ContainerTrait
         $service = null;
 
         if (isset($this->_containerServicesDefinitions[$name])) {
-            $service = \Fine\Std\ObjectUtils::revive($this->_containerServicesDefinitions[$name]);
+
+            $definition = $this->_containerServicesDefinitions[$name];
+
+            if (is_string($definition)) {
+                $service = new $definition;
+            }
+            else if (is_array($definition)) {
+                $class = array_shift($definition);
+                $service = new $class($definition);
+            }
+            else if ($definition instanceof Closure) {
+                $service = $definition();
+            }
+            elseif (is_object($definition)) {
+                $service = $definition;
+            }
+
         }
         else if (method_exists($this, '_' . $name)) {
             $service = $this->{"_$name"}();
