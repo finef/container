@@ -55,6 +55,6 @@ interface ContainerInterface extends \ArrayAccess, \IteratorAggregate
      *
      * @return array Defined services names
      */
-    public function getInterator();
+    public function getIterator();
 
 }

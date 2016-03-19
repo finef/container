@@ -90,7 +90,7 @@ trait ContainerTrait
     {
     }
 
-    public function getInterator()
+    public function getIterator()
     {
         $services = array_keys($this->_containerServicesDefinitions);
         if (in_array('_extend', $services)) {
