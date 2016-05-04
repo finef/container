@@ -51,7 +51,7 @@ trait ContainerTrait
                 $service = new $class($definition);
             }
             else if ($definition instanceof Closure) {
-                $service = $definition();
+                $service = call_user_func($definition);
             }
             elseif (is_object($definition)) {
                 $service = $definition;
@@ -71,6 +71,11 @@ trait ContainerTrait
 
     public function __call($name, $args)
     {
+        if (substr($name, 0, 3) === 'get' && ctype_upper($name[3])) {
+            $service = substr($name, 3);
+            return $this->$service;
+        }
+
         return call_user_func_array(array($this->$name, 'helper'), $args);
     }
 
@@ -94,7 +99,7 @@ trait ContainerTrait
     {
         $services = array_keys($this->_containerServicesDefinitions);
         if (in_array('_extend', $services)) {
-            unset($array[array_search('_extend', $services)]);
+            unset($services[array_search('_extend', $services)]);
         }
         return ArrayIterator($services);
     }
