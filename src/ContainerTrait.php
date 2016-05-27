@@ -46,10 +46,6 @@ trait ContainerTrait
             if (is_string($definition)) {
                 $service = new $definition;
             }
-            else if (is_array($definition)) {
-                $class = array_shift($definition);
-                $service = new $class($definition);
-            }
             else if ($definition instanceof Closure) {
                 $service = call_user_func($definition);
             }
@@ -64,6 +60,13 @@ trait ContainerTrait
 
         if (isset($this->_containerServicesDefinitions['_extend'])) {
             $service = $this->_containerServicesDefinitions['_extend']($name, $service);
+        }
+        elseif (method_exists($this, '__extend')) {
+            $service = $this->__extend($name, $service);
+        }
+        
+        if (!$service instanceof NotSharedInterface) {
+            $this->$name = $service;
         }
 
         return $service;
