@@ -6,33 +6,17 @@ trait ContainerTrait
 {
 
     protected $_containerServicesDefinitions = array();
-
-    public function __construct(array $config = array())
-    {
-        foreach ($config as $method => $arg) {
-            $this->{$method}($arg);
-        }
-    }
+    protected $_containerDefaultShared = false;
+    protected $_containerDelegate;
 
     public function __invoke(array $definitions)
     {
-        foreach ($definitions as $name => $definition) {
-            $this->_containerServicesDefinitions[$name] = $definition;
-        }
-        return $this;
+        return $this->define($definitions);
     }
 
     public function __isset($name)
     {
-        if (isset($this->_containerServicesDefinitions[$name])) {
-            return true;
-        }
-
-        if (method_exists($this, '_' . $name)) {
-            return true;
-        }
-
-        return false;
+        return $this->has($name);
     }
 
     public function __get($name)
@@ -47,7 +31,11 @@ trait ContainerTrait
                 $service = new $definition;
             }
             else if ($definition instanceof Closure) {
-                $service = call_user_func($definition);
+                $shared = $this->_containerDefaultShared;
+                $service = call_user_func($definition, $this, $shared);
+                if ($shared) {
+                    $this->$name = $service;
+                }
             }
             elseif (is_object($definition)) {
                 $service = $definition;
@@ -57,45 +45,86 @@ trait ContainerTrait
         else if (method_exists($this, '_' . $name)) {
             $service = $this->{"_$name"}();
         }
-
-        if (isset($this->_containerServicesDefinitions['_extend'])) {
-            $service = $this->_containerServicesDefinitions['_extend']($name, $service);
-        }
-        elseif (method_exists($this, '__extend')) {
-            $service = $this->__extend($name, $service);
+        elseif ($this->_containerDelegate) {
+            return $this->_containerDelegate->$name;
         }
         
-        if (!$service instanceof NotSharedInterface) {
-            $this->$name = $service;
+        if (isset($this->_containerServicesDefinitions['_extend'])) {
+            $service = call_user_func($this->_containerServicesDefinitions['_extend'], $service, $name, $this);
         }
-
+        elseif (method_exists($this, '__extend')) {
+            $service = call_user_func([$this, '__extend'], $service, $name, $this);
+        }
+        
         return $service;
     }
-
-    public function __call($name, $args)
+    
+    public function __set($name, $definition)
     {
-        if (substr($name, 0, 3) === 'get' && ctype_upper($name[3])) {
-            $service = substr($name, 3);
-            return $this->$service;
-        }
-
-        return call_user_func_array(array($this->$name, 'helper'), $args);
+        return $this->set($name, $definition);
     }
 
+    public function define(array $definitions)
+    {
+        $this->_containerServicesDefinitions = array_merge($this->_containerServicesDefinitions, $definitions);
+        return $this;
+    }
+    
+    public function set($name, $definition)
+    {
+        $this->_containerServicesDefinitions[$name] = $definition;
+        return $this;
+    }
+    
+    public function has($name)
+    {
+        if (isset($this->_containerServicesDefinitions[$name])) {
+            return true;
+        }
+
+        if (method_exists($this, '_' . $name)) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    public function get($name)
+    {
+        return $this->{$name};
+    }
+    
+    public function setDefaultShared($defaultShared)
+    {
+        $this->_containerDefaultShared = $defaultShared;
+        return $this;
+    }
+    
+    public function setDelegateContainer(ContainerInterface $container)
+    {
+        $this->_containerDelegate = $container;
+        return $this;
+    }
+    
     public function offsetSet($name, $definition)
     {
         $this->_containerServicesDefinitions[$name] = $definition;
         return $this;
     }
 
-    public function offsetExists($offset)
+    public function offsetExists($name)
     {
+        return $this->has($name);
     }
-    public function offsetGet($offset)
+    
+    public function offsetGet($name)
     {
+        return $this->get($name);
     }
-    public function offsetUnset($offset)
+    
+    public function offsetUnset($name)
     {
+        unset($this->_containerServicesDefinitions[$name]);
     }
 
     public function getIterator()
